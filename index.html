@@ -28,11 +28,10 @@
     <!-- CONTAINER UTAMA -->
     <div class="w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden relative flex flex-col" style="height: 85vh;">
         
-        <!-- BAGIAN 1: LOGIN (Tanpa Hint & Input Kosong) -->
+        <!-- BAGIAN 1: LOGIN -->
         <div id="auth-screen" class="flex-1 flex flex-col p-8 justify-center">
             
             <div class="text-center mb-8">
-                <!-- Ikon Umum (Tidak ada nama) -->
                 <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600">
                     <i class="fas fa-lock text-2xl"></i>
                 </div>
@@ -40,7 +39,6 @@
                 <p class="text-gray-500 mt-2">Silakan masukkan kredensial anda</p>
             </div>
 
-            <!-- Form Login -->
             <form id="mainLoginForm" onsubmit="handleMainLogin(event)">
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2" for="mainUser">Username</label>
@@ -48,7 +46,6 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                             <i class="fas fa-user"></i>
                         </span>
-                        <!-- Input kosong, hanya ada placeholder -->
                         <input class="shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" id="mainUser" type="text" placeholder="Username" required>
                     </div>
                 </div>
@@ -60,7 +57,6 @@
                         </span>
                         <input class="shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" id="mainPass" type="password" placeholder="Masukkan Password" required>
                     </div>
-                    <!-- Pesan Error (Generic) -->
                     <p id="loginError" class="text-red-500 text-xs italic hidden-el text-center bg-red-50 p-2 rounded border border-red-100">
                         <i class="fas fa-exclamation-circle"></i> Username atau Password salah!
                     </p>
@@ -71,18 +67,13 @@
                     </button>
                 </div>
             </form>
-
-            <!-- Tulisan HINT sudah DIHAPUS di sini agar rahasia -->
-
         </div>
 
         <!-- BAGIAN 2: DASHBOARD APLIKASI -->
         <div id="app-screen" class="hidden-el flex-1 flex flex-col h-full">
             
-            <!-- Header Dashboard (Judul diganti jadi Generik) -->
             <div class="bg-blue-600 p-4 text-white flex justify-between items-center shadow-md z-10">
                 <div>
-                    <!-- Judul sekarang 'Buku Harian Pribadi', bukan 'Sonya' -->
                     <h1 class="text-lg font-bold">Buku Harian Pribadi</h1>
                     <p class="text-xs text-blue-100">Aman & Tersimpan</p>
                 </div>
@@ -91,7 +82,6 @@
                 </button>
             </div>
 
-            <!-- Konten Dashboard -->
             <div class="flex-1 p-4 overflow-y-auto bg-gray-50 diary-scroll">
                 
                 <!-- Form Tulis Catatan -->
@@ -112,12 +102,8 @@
                     </form>
                 </div>
 
-                <!-- Daftar Catatan -->
-                <div id="diaryList" class="space-y-3 pb-10">
-                    <!-- Item akan muncul di sini -->
-                </div>
+                <div id="diaryList" class="space-y-3 pb-10"></div>
                 
-                <!-- State Kosong -->
                 <div id="emptyState" class="hidden-el text-center py-10 text-gray-400">
                     <i class="far fa-folder-open text-4xl mb-2"></i>
                     <p class="text-sm">Belum ada catatan.</p>
@@ -129,23 +115,43 @@
 
     <!-- JAVASCRIPT -->
     <script>
-        // Kunci penyimpanan
-        const STORAGE_KEY = 'secret_diary_data_v1';
-        let currentUser = 'Sonya'; // Kode tetap internal
+        const STORAGE_KEY = 'secret_diary_data_sonya_v2';
+        const currentUser = 'Sonya';
+
+        // --- DATA BAWAAN (HARDCODED DI KODINGAN) ---
+        // Catatan ini akan langsung muncul saat login, dan tidak hilang meskipun cache dihapus.
+        const DEFAULT_ENTRIES = [
+            {
+                id: 10001,
+                date: "Senin, 30 Januari 2026 pukul 20.30",
+                title: "Cerita Yang Terpendam",
+                content: "Inilah aku, seorang gadis yang keberadaanku tidak diinginkan oleh ibu tiriku. Dia adalah sosok yang menggantikan keberadaan Ibuku yang sudah meninggal sejak hari aku dilahirkan. Pada saat aku berumur 5 tahun ayah menikahi Bu Nela yang aku panggil dengan sosok Ibu walaupun dia adalah Ibu tiriku. Namun dibalik itu semua ada rasa sakit yang selama ini aku pendam dan takut untuk menceritakannya kepada siapapun. Berawal sejak aku berumur 5 tahun, sikap Ibu tiba-tiba berubah kepadaku. Awal- awal dia menikah dengan Ayah, sikapnya sangat baik padaku. Dia yang selalu menyayangiku, menyuapiku disaat aku sedang sakit, mengajariku hal-hal yang belum ku ketahui, kini semua itu berubah menjadi sosok yang tidak ku kenali. Dia selalu memarahiku mengenai ha-hal kecil, memukuli aku sampai lebam, bahkan sampai berdarah. Namun, itu semua tidak dilakukannya ketika aku berada didekat Ayah. Bi Inah menjadi saksi kehidupanku selama 5 tahun terakhir ini. Sampai suatu hari dia mulai meracuni makanan yang disajikan untukku secara diam-diam dan akhirnya pun aku selalu keluar-masuk rumah sakit, dan semua itu tidak diketahui oleh Ayahku. Selama ini aku hanya bisa bungkam mengenai sikap asli Ibuku belakangan ini, aku hanya bisa mencurahkannya di 'Buku Diary' milikku ini. Bi Inah satu-satunya yang peduli padaku ketika ayah sedang bekerja. Dia yang selalu memberiku makan secara diam-diam walaupun akhirnya dimarahi oleh Ibu. Hari pun terus berjalan dengan Ibu yang selalu memukuli aku tanpa henti hingga akhirnya aku merasa lelah dengan semua itu. Aku ingin merasakan ketenangan seperti sebelum semua ini terjadi, aku lelah menjadi beban Ayah yang selalu membiayaiku keluar-masuk rumah sakit walaupun keluargaku memiliki fasilitas yang terjangkau. Pada suatu malam, aku mencari keberadaan racun-racun yang disembunyikan oleh Ibuku. Jika menginginkanku mati secara perlahan maka akan ku buat semua itu terjadi lebih cepat tanpa merasakan rasa sakit lagi. Aku menemukan semua racun yang digunakannya untuk meracuniku setiap hari, aku tidak tahu mana yang paling mematikanuntuk aku minum, karena aku masih berumur 10 tahun jadi belum mengerti hal-hal seperti ini. Lalu, aku meminum semua racun yang ada disana, kemudian aku masuk ke dalam kamarku. Sebelum kesadaranku hilang, aku menitipkan Buku diary ku kepada Bi Inah, supaya menjadi saksi bagaimana kehidupanku selama 5 tahun terakhir ini."
+            },
+        ];
+
+        // Fungsi Inisialisasi Data (Agar catatan bawaan selalu ada)
+        function initializeData() {
+            const existingData = localStorage.getItem(STORAGE_KEY);
+            // Jika data di browser kosong/null, masukkan data bawaan dari kodingan
+            if (!existingData) {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_ENTRIES));
+            }
+        }
+
+        // Jalankan inisialisasi saat halaman dibuka
+        initializeData();
 
         // --- FUNGSI LOGIN ---
         function handleMainLogin(e) {
             e.preventDefault();
-            
             const userIn = document.getElementById('mainUser').value.trim();
             const passIn = document.getElementById('mainPass').value.trim();
             const errorMsg = document.getElementById('loginError');
 
-            // Cek hardcoded login (Sonya & DesaBoling)
             if (userIn === 'Sonya' && passIn === 'DesaBoling') {
                 openDashboard();
                 document.getElementById('mainPass').value = '';
-                document.getElementById('mainUser').value = ''; // Kosongkan juga username setelah login
+                document.getElementById('mainUser').value = '';
                 errorMsg.classList.add('hidden-el');
             } else {
                 errorMsg.classList.remove('hidden-el');
@@ -181,6 +187,7 @@
                 content
             };
 
+            // Ambil data yang ada, tambahkan data baru di paling atas
             const existingData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
             existingData.unshift(newEntry);
             localStorage.setItem(STORAGE_KEY, JSON.stringify(existingData));
@@ -205,6 +212,7 @@
             const listContainer = document.getElementById('diaryList');
             const emptyState = document.getElementById('emptyState');
             
+            // Ambil data dari LocalStorage
             const entries = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
             listContainer.innerHTML = '';
 
