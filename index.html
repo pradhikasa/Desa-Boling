@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buku Harian Pribadi</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --danger: #ef4444;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Container Utama */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            position: relative;
+            min-height: 600px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navigasi & Header */
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .btn-logout {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Layar (Auth vs Dashboard) */
+        .screen {
+            padding: 24px;
+            flex: 1;
+            display: none; /* Disembunyikan secara default */
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        input[type="text"],
+        input[type="password"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .switch-text {
+            text-align: center;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .switch-text a {
+            color: var(--primary);
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Styling List Catatan */
+        .diary-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 40px;
+        }
+
+        .diary-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            position: relative;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .diary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .diary-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .diary-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .diary-content {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #4b5563;
+            white-space: pre-wrap; /* Agar enter terbaca */
+        }
+
+        .btn-delete {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: #d1d5db;
+            cursor: pointer;
+            transition: color 0.2s;
+            font-size: 1.2rem;
+        }
+
+        .btn-delete:hover {
+            color: var(--danger);
+        }
+
+        /* Toast Notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+
+        #toast.success { background-color: #10b981; }
+        #toast.error { background-color: #ef4444; }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- BAGIAN 1: AUTH (LOGIN & REGISTER) -->
+        <div id="auth-screen" class="screen active">
+            <div style="text-align: center; margin-bottom: 24px;">
+                <h2>Selamat Datang</h2>
+                <p style="color: var(--text-muted)">Masuk untuk melihat buku harianmu</p>
+            </div>
+
+            <!-- Form Login -->
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" placeholder="Contoh: andi" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" placeholder="******" required>
+                </div>
+                <button type="submit" class="btn-primary">Masuk</button>
+                <div class="switch-text">
+                    Belum punya akun? <a onclick="toggleAuthMode('register')">Daftar sekarang</a>
+                </div>
+            </form>
+
+            <!-- Form Register (Disembunyikan awalnya) -->
+            <form id="register-form" style="display: none;">
+                <div class="form-group">
+                    <label for="reg-username">Buat Username</label>
+                    <input type="text" id="reg-username" placeholder="Contoh: andi" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-password">Buat Password</label>
+                    <input type="password" id="reg-password" placeholder="******" required>
+                </div>
+                <button type="submit" class="btn-primary" style="background-color: var(--text-main)">Daftar</button>
+                <div class="switch-text">
+                    Sudah punya akun? <a onclick="toggleAuthMode('login')">Masuk di sini</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- BAGIAN 2: DASHBOARD APLIKASI -->
+        <div id="app-screen" class="screen">
+            <header>
+                <div class="user-info">
+                    <div>
+                        <h1>Buku Harian</h1>
+                        <p id="display-username">Halo, User</p>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Keluar</button>
+                </div>
+            </header>
+
+            <div style="padding: 20px 0;">
+                <!-- Form Tambah Catatan -->
+                <form id="diary-form">
+                    <div class="form-group">
+                        <label for="entry-title">Judul Cerita</label>
+                        <input type="text" id="entry-title" placeholder="Apa yang terjadi hari ini?" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-content">Isi Cerita</label>
+                        <textarea id="entry-content" placeholder="Tumpahkan semua perasaanmu di sini..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Simpan ke Buku Harian</button>
+                </form>
+
+                <!-- Daftar Catatan -->
+                <div id="diary-list-container" class="diary-list">
+                    <!-- Catatan akan muncul di sini via JS -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notification Element -->
+    <div id="toast">Pesan notifikasi</div>
+
+    <script>
+        // --- MANAJEMEN DATA & STORAGE ---
+        const DB_USERS = 'diary_app_users';
+        const DB_ENTRIES = 'diary_app_entries';
+        let currentUser = null;
+
+        // Fungsi Helper untuk LocalStorage
+        function getUsers() {
+            const users = localStorage.getItem(DB_USERS);
+            return users ? JSON.parse(users) : [];
+        }
+
+        function saveUser(userObj) {
+            const users = getUsers();
+            users.push(userObj);
+            localStorage.setItem(DB_USERS, JSON.stringify(users));
+        }
+
+        function getEntries(username) {
+            const allEntries = localStorage.getItem(DB_ENTRIES);
+            const data = allEntries ? JSON.parse(allEntries) : {};
+            return data[username] || [];
+        }
+
+        function saveEntry(username, entryObj) {
+            const allEntries = localStorage.getItem(DB_ENTRIES);
+            const data = allEntries ? JSON.parse(allEntries) : {};
+            
+            if (!data[username]) {
+                data[username] = [];
+            }
+            
+            // Tambahkan entry baru di paling atas (unshift)
+            data[username].unshift(entryObj);
+            localStorage.setItem(DB_ENTRIES, JSON.stringify(data));
+        }
+
+        function deleteEntry(username, entryId) {
+            const allEntries = localStorage.getItem(DB_ENTRIES);
+            const data = allEntries ? JSON.parse(allEntries) : {};
+            
+            if (data[username]) {
+                data[username] = data[username].filter(entry => entry.id !== entryId);
+                localStorage.setItem(DB_ENTRIES, JSON.stringify(data));
+            }
+        }
+
+        // --- MANAJEMEN AUTH (LOGIN/REGISTER) ---
+        function toggleAuthMode(mode) {
+            const loginForm = document.getElementById('login-form');
+            const regForm = document.getElementById('register-form');
+            
+            if (mode === 'register') {
+                loginForm.style.display = 'none';
+                regForm.style.display = 'block';
+            } else {
+                loginForm.style.display = 'block';
+                regForm.style.display = 'none';
+            }
+        }
+
+        document.getElementById('register-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+
+            if (username.length < 3 || password.length < 3) {
+                showToast("Username & password minimal 3 karakter!", "error");
+                return;
+            }
+
+            const users = getUsers();
+            const existingUser = users.find(u => u.username === username);
+
+            if (existingUser) {
+                showToast("Username sudah dipakai orang lain.", "error");
+            } else {
+                // Simpan user baru
+                // CATATAN: Di aplikasi nyata, password HARUS di-hash (enkripsi). 
+                // Ini hanya simulasi client-side sederhana.
+                saveUser({ username, password });
+                showToast("Pendaftaran berhasil! Silakan login.", "success");
+                toggleAuthMode('login');
+                // Bersihkan form
+                document.getElementById('reg-username').value = '';
+                document.getElementById('reg-password').value = '';
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+
+            const users = getUsers();
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = user.username;
+                showToast(`Selamat datang kembali, ${currentUser}!`, "success");
+                openDashboard();
+            } else {
+                showToast("Username atau password salah.", "error");
+            }
+        });
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('login-username').value = '';
+            document.getElementById('login-password').value = '';
+            switchScreen('auth-screen');
+            showToast("Berhasil keluar.", "success");
+        }
+
+        // --- LOGIKA BUKU HARIAN ---
+        function openDashboard() {
+            document.getElementById('display-username').textContent = `Halo, ${currentUser}`;
+            renderEntries();
+            switchScreen('app-screen');
+        }
+
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        document.getElementById('diary-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('entry-title').value.trim();
+            const content = document.getElementById('entry-content').value.trim();
+
+            if (!title || !content) return;
+
+            const newEntry = {
+                id: Date.now(), // ID unik berdasarkan waktu
+                date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
+                title: title,
+                content: content
+            };
+
+            saveEntry(currentUser, newEntry);
+            
+            // Reset Form
+            document.getElementById('entry-title').value = '';
+            document.getElementById('entry-content').value = '';
+            
+            showToast("Catatan berhasil disimpan!", "success");
+            renderEntries();
+        });
+
+        function renderEntries() {
+            const container = document.getElementById('diary-list-container');
+            const entries = getEntries(currentUser);
+
+            container.innerHTML = '';
+
+            if (entries.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>Belum ada catatan.</p>
+                        <p>Mulai tulis ceritamu sekarang!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            entries.forEach(entry => {
+                const card = document.createElement('div');
+                card.className = 'diary-card';
+                card.innerHTML = `
+                    <div class="diary-date">${entry.date}</div>
+                    <div class="diary-title">${escapeHtml(entry.title)}</div>
+                    <div class="diary-content">${escapeHtml(entry.content)}</div>
+                    <button class="btn-delete" onclick="deleteDiaryEntry(${entry.id})" title="Hapus Catatan">&times;</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Fungsi agar HTML tidak tereksekusi (security sederhana)
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        // Fungsi hapus entry (dipanggil dari string HTML)
+        window.deleteDiaryEntry = function(id) {
+            if(confirm("Yakin ingin menghapus catatan ini?")) {
+                deleteEntry(currentUser, id);
+                renderEntries();
+                showToast("Catatan dihapus.", "success");
+            }
+        };
+
+        // --- UTILITAS NOTIFIKASI (TOAST) ---
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById("toast");
+            toast.className = "show " + type;
+            toast.textContent = message;
+            
+            setTimeout(function(){ 
+                toast.className = toast.className.replace("show", ""); 
+            }, 3000);
+        }
+
+        // Cek apakah user sudah login sebelumnya (Opsional: fitur auto-login)
+        // Untuk privasi yang lebih baik di aplikasi ini, kita minta login ulang saat refresh.
+    </script>
+</body>
+</html>
