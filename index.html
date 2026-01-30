@@ -4,567 +4,334 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buku Harian Pribadi</title>
+    
+    <!-- Tailwind CSS (Untuk Styling) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome (Untuk Ikon) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        :root {
-            --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-body: #f3f4f6;
-            --bg-card: #ffffff;
-            --text-main: #1f2937;
-            --text-muted: #6b7280;
-            --danger: #ef4444;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --radius: 12px;
+        /* Kustomisasi tambahan jika perlu */
+        .hidden { display: none; }
+        .diary-scroll::-webkit-scrollbar {
+            width: 6px;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        .diary-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
         }
-
-        body {
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        /* Container Utama */
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            overflow: hidden;
-            position: relative;
-            min-height: 600px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Navigasi & Header */
-        header {
-            background: var(--primary);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        header h1 {
-            font-size: 1.5rem;
-            margin-bottom: 5px;
-        }
-
-        header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-
-        .user-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.9rem;
-        }
-
-        .btn-logout {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            transition: background 0.2s;
-        }
-
-        .btn-logout:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* Layar (Auth vs Dashboard) */
-        .screen {
-            padding: 24px;
-            flex: 1;
-            display: none; /* Disembunyikan secara default */
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        .screen.active {
-            display: flex;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Form Elements */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: var(--text-main);
-        }
-
-        input[type="text"],
-        input[type="password"],
-        textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .btn-primary {
-            width: 100%;
-            padding: 12px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-
-        .switch-text {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 0.9rem;
-            color: var(--text-muted);
-        }
-
-        .switch-text a {
-            color: var(--primary);
-            text-decoration: none;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        /* Styling List Catatan */
-        .diary-list {
-            margin-top: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .empty-state {
-            text-align: center;
-            color: var(--text-muted);
-            margin-top: 40px;
-        }
-
-        .diary-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 16px;
-            position: relative;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .diary-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-
-        .diary-date {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-bottom: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .diary-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-        }
-
-        .diary-content {
-            font-size: 0.95rem;
-            line-height: 1.5;
-            color: #4b5563;
-            white-space: pre-wrap; /* Agar enter terbaca */
-        }
-
-        .btn-delete {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: transparent;
-            border: none;
-            color: #d1d5db;
-            cursor: pointer;
-            transition: color 0.2s;
-            font-size: 1.2rem;
-        }
-
-        .btn-delete:hover {
-            color: var(--danger);
-        }
-
-        /* Toast Notification */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 8px;
-            padding: 12px;
-            position: fixed;
-            z-index: 1;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
-        }
-
-        #toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px;
-        }
-
-        #toast.success { background-color: #10b981; }
-        #toast.error { background-color: #ef4444; }
-
     </style>
 </head>
-<body>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center font-sans p-4">
 
-    <div class="app-container">
+    <!-- CONTAINER UTAMA -->
+    <div class="w-full max-w-md bg-white rounded-lg shadow-xl overflow-hidden relative" style="max-height: 90vh; display: flex; flex-direction: column;">
         
         <!-- BAGIAN 1: AUTH (LOGIN & REGISTER) -->
-        <div id="auth-screen" class="screen active">
-            <div style="text-align: center; margin-bottom: 24px;">
-                <h2>Selamat Datang</h2>
-                <p style="color: var(--text-muted)">Masuk untuk melihat buku harianmu</p>
+        <div id="auth-screen" class="flex-1 flex flex-col p-8 overflow-y-auto">
+            
+            <!-- Header Login -->
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800">Selamat Datang</h2>
+                <p class="text-gray-500 mt-2">Masuk untuk melihat buku harianmu</p>
             </div>
 
-            <!-- Form Login -->
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="login-username">Username</label>
-                    <input type="text" id="login-username" placeholder="Sonya" required>
+            <!-- Form Login (Sesuai Request Anda) -->
+            <form id="mainLoginForm" onsubmit="handleMainLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="mainUser">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input class="shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" id="mainUser" type="text" placeholder="Username" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="login-password">Password</label>
-                    <input type="password" id="login-password" placeholder="DesaBoling" required>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="mainPass">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input class="shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" id="mainPass" type="password" placeholder="******************" required>
+                    </div>
+                    <!-- Pesan Error -->
+                    <p id="loginError" class="text-red-500 text-xs italic hidden">
+                        <i class="fas fa-exclamation-circle"></i> Username atau Password salah!
+                    </p>
                 </div>
-                <button type="submit" class="btn-primary">Masuk</button>
-                <div class="switch-text">
-                    Belum punya akun? <a onclick="toggleAuthMode('register')">Daftar sekarang</a>
+                <div class="flex items-center justify-between">
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full focus:outline-none focus:shadow-outline transition duration-300" type="submit">
+                        Masuk
+                    </button>
                 </div>
             </form>
 
-            <!-- Form Register (Disembunyikan awalnya) -->
-            <form id="register-form" style="display: none;">
-                <div class="form-group">
-                    <label for="reg-username">Buat Username</label>
-                    <input type="text" id="reg-username" placeholder="Contoh: andi" required>
+            <div class="text-center mt-6">
+                <span class="text-sm text-gray-600">Belum punya akun?</span>
+                <button onclick="toggleAuthMode('register')" class="text-sm font-bold text-blue-600 hover:text-blue-800 ml-1 focus:outline-none">Daftar sekarang</button>
+            </div>
+
+            <!-- Form Register (Disembunyikan) -->
+            <form id="registerForm" onsubmit="handleRegister(event)" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="regUser">Buat Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-user-plus"></i>
+                        </span>
+                        <input class="shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" id="regUser" type="text" placeholder="Username Baru" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="reg-password">Buat Password</label>
-                    <input type="password" id="reg-password" placeholder="******" required>
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2" for="regPass">Buat Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                            <i class="fas fa-key"></i>
+                        </span>
+                        <input class="shadow appearance-none border rounded w-full py-2 pl-10 pr-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:ring-2 focus:ring-green-500" id="regPass" type="password" placeholder="******************" required>
+                    </div>
+                    <p id="regError" class="text-red-500 text-xs italic hidden">
+                        <i class="fas fa-exclamation-circle"></i> Error pendaftaran!
+                    </p>
                 </div>
-                <button type="submit" class="btn-primary" style="background-color: var(--text-main)">Daftar</button>
-                <div class="switch-text">
-                    Sudah punya akun? <a onclick="toggleAuthMode('login')">Masuk di sini</a>
+                <div class="flex items-center justify-between">
+                    <button class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded w-full focus:outline-none focus:shadow-outline transition duration-300" type="submit">
+                        Daftar
+                    </button>
+                </div>
+                <div class="text-center mt-6">
+                    <span class="text-sm text-gray-600">Sudah punya akun?</span>
+                    <button onclick="toggleAuthMode('login')" class="text-sm font-bold text-blue-600 hover:text-blue-800 ml-1 focus:outline-none">Masuk di sini</button>
                 </div>
             </form>
+
         </div>
 
         <!-- BAGIAN 2: DASHBOARD APLIKASI -->
-        <div id="app-screen" class="screen">
-            <header>
-                <div class="user-info">
-                    <div>
-                        <h1>Buku Harian</h1>
-                        <p id="display-username">Halo, User</p>
-                    </div>
-                    <button class="btn-logout" onclick="logout()">Keluar</button>
+        <div id="app-screen" class="hidden flex-1 flex flex-col h-full">
+            <!-- Header Dashboard -->
+            <div class="bg-blue-600 p-6 text-white flex justify-between items-center">
+                <div>
+                    <h1 class="text-xl font-bold">Buku Harian</h1>
+                    <p id="display-username" class="text-sm text-blue-100">Halo, User</p>
                 </div>
-            </header>
+                <button onclick="logout()" class="bg-blue-700 hover:bg-blue-800 text-white text-sm py-1 px-3 rounded border border-blue-400 transition">
+                    <i class="fas fa-sign-out-alt"></i> Keluar
+                </button>
+            </div>
 
-            <div style="padding: 20px 0;">
-                <!-- Form Tambah Catatan -->
-                <form id="diary-form">
-                    <div class="form-group">
-                        <label for="entry-title">Judul Cerita</label>
-                        <input type="text" id="entry-title" placeholder="Apa yang terjadi hari ini?" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="entry-content">Isi Cerita</label>
-                        <textarea id="entry-content" placeholder="Tumpahkan semua perasaanmu di sini..." required></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary">Simpan ke Buku Harian</button>
-                </form>
+            <!-- Konten Dashboard (Scrollable) -->
+            <div class="flex-1 p-6 overflow-y-auto bg-gray-50 diary-scroll">
+                
+                <!-- Form Tulis -->
+                <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
+                    <h3 class="text-gray-800 font-bold mb-3">Tulis Cerita Baru</h3>
+                    <form id="diaryForm" onsubmit="saveEntry(event)">
+                        <div class="mb-3">
+                            <input type="text" id="entryTitle" class="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Judul cerita hari ini..." required>
+                        </div>
+                        <div class="mb-3">
+                            <textarea id="entryContent" class="w-full p-2 border rounded text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 h-24" placeholder="Apa yang kamu rasakan?" required></textarea>
+                        </div>
+                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full font-bold transition">
+                            <i class="fas fa-save"></i> Simpan
+                        </button>
+                    </form>
+                </div>
 
                 <!-- Daftar Catatan -->
-                <div id="diary-list-container" class="diary-list">
-                    <!-- Catatan akan muncul di sini via JS -->
+                <div id="diaryList" class="space-y-4">
+                    <!-- Item akan dimasukkan lewat JS -->
+                </div>
+                
+                <div id="emptyState" class="hidden text-center py-10 text-gray-400">
+                    <i class="far fa-folder-open text-4xl mb-2"></i>
+                    <p>Belum ada catatan.</p>
                 </div>
             </div>
         </div>
 
     </div>
 
-    <!-- Toast Notification Element -->
-    <div id="toast">Pesan notifikasi</div>
-
+    <!-- JAVASCRIPT -->
     <script>
-        // --- MANAJEMEN DATA & STORAGE ---
-        const DB_USERS = 'diary_app_users';
-        const DB_ENTRIES = 'diary_app_entries';
+        const DB_USERS = 'diary_app_users_v2';
+        const DB_ENTRIES = 'diary_app_entries_v2';
         let currentUser = null;
 
-        // Fungsi Helper untuk LocalStorage
-        function getUsers() {
-            const users = localStorage.getItem(DB_USERS);
-            return users ? JSON.parse(users) : [];
-        }
+        // --- SISTEM AUTH (LOGIN & REGISTER) ---
 
-        function saveUser(userObj) {
-            const users = getUsers();
-            users.push(userObj);
-            localStorage.setItem(DB_USERS, JSON.stringify(users));
-        }
-
-        function getEntries(username) {
-            const allEntries = localStorage.getItem(DB_ENTRIES);
-            const data = allEntries ? JSON.parse(allEntries) : {};
-            return data[username] || [];
-        }
-
-        function saveEntry(username, entryObj) {
-            const allEntries = localStorage.getItem(DB_ENTRIES);
-            const data = allEntries ? JSON.parse(allEntries) : {};
-            
-            if (!data[username]) {
-                data[username] = [];
-            }
-            
-            // Tambahkan entry baru di paling atas (unshift)
-            data[username].unshift(entryObj);
-            localStorage.setItem(DB_ENTRIES, JSON.stringify(data));
-        }
-
-        function deleteEntry(username, entryId) {
-            const allEntries = localStorage.getItem(DB_ENTRIES);
-            const data = allEntries ? JSON.parse(allEntries) : {};
-            
-            if (data[username]) {
-                data[username] = data[username].filter(entry => entry.id !== entryId);
-                localStorage.setItem(DB_ENTRIES, JSON.stringify(data));
-            }
-        }
-
-        // --- MANAJEMEN AUTH (LOGIN/REGISTER) ---
         function toggleAuthMode(mode) {
-            const loginForm = document.getElementById('login-form');
-            const regForm = document.getElementById('register-form');
+            const loginForm = document.getElementById('mainLoginForm');
+            const regForm = document.getElementById('registerForm');
+            const loginError = document.getElementById('loginError');
             
+            // Reset error messages saat pindah mode
+            loginError.classList.add('hidden');
+
             if (mode === 'register') {
-                loginForm.style.display = 'none';
-                regForm.style.display = 'block';
+                loginForm.parentElement.classList.add('hidden'); // Sembunyikan div induk login
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                
+                // Trik layout agar container tetap terlihat rapi
+                document.getElementById('auth-screen').querySelector('h2').textContent = "Buat Akun Baru";
+                document.getElementById('auth-screen').querySelector('p').textContent = "Daftar untuk mulai menulis ceritamu";
             } else {
-                loginForm.style.display = 'block';
-                regForm.style.display = 'none';
+                regForm.classList.add('hidden');
+                loginForm.parentElement.classList.remove('hidden');
+                loginForm.classList.remove('hidden');
+                
+                document.getElementById('auth-screen').querySelector('h2').textContent = "Selamat Datang";
+                document.getElementById('auth-screen').querySelector('p').textContent = "Masuk untuk melihat buku harianmu";
             }
         }
 
-        document.getElementById('register-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('reg-username').value.trim();
-            const password = document.getElementById('reg-password').value.trim();
+        // Fungsi Login yang sesuai dengan onsubmit="handleMainLogin(event)" di HTML Anda
+        function handleMainLogin(e) {
+            e.preventDefault(); // Mencegah reload halaman
+            
+            const user = document.getElementById('mainUser').value.trim();
+            const pass = document.getElementById('mainPass').value.trim();
+            const errorMsg = document.getElementById('loginError');
 
-            if (username.length < 3 || password.length < 3) {
-                showToast("Username & password minimal 3 karakter!", "error");
+            const users = JSON.parse(localStorage.getItem(DB_USERS)) || [];
+            const foundUser = users.find(u => u.username === user && u.password === pass);
+
+            if (foundUser) {
+                currentUser = user;
+                openDashboard();
+                // Reset form
+                document.getElementById('mainPass').value = '';
+                errorMsg.classList.add('hidden');
+            } else {
+                // Tampilkan pesan error spesifik di bawah password
+                errorMsg.classList.remove('hidden');
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            
+            const user = document.getElementById('regUser').value.trim();
+            const pass = document.getElementById('regPass').value.trim();
+            const errorMsg = document.getElementById('regError');
+
+            if(user.length < 3 || pass.length < 3) {
+                errorMsg.textContent = "Minimal 3 karakter!";
+                errorMsg.classList.remove('hidden');
                 return;
             }
 
-            const users = getUsers();
-            const existingUser = users.find(u => u.username === username);
-
-            if (existingUser) {
-                showToast("Username sudah dipakai orang lain.", "error");
+            const users = JSON.parse(localStorage.getItem(DB_USERS)) || [];
+            
+            // Cek apakah username sudah ada
+            if (users.some(u => u.username === user)) {
+                errorMsg.textContent = "Username sudah dipakai!";
+                errorMsg.classList.remove('hidden');
             } else {
-                // Simpan user baru
-                // CATATAN: Di aplikasi nyata, password HARUS di-hash (enkripsi). 
-                // Ini hanya simulasi client-side sederhana.
-                saveUser({ username, password });
-                showToast("Pendaftaran berhasil! Silakan login.", "success");
+                users.push({ username: user, password: pass });
+                localStorage.setItem(DB_USERS, JSON.stringify(users));
+                
+                // Pindah ke login
+                alert("Pendaftaran berhasil! Silakan login.");
                 toggleAuthMode('login');
-                // Bersihkan form
-                document.getElementById('reg-username').value = '';
-                document.getElementById('reg-password').value = '';
+                document.getElementById('mainUser').value = user; // Auto-fill username
+                errorMsg.classList.add('hidden');
+                document.getElementById('regUser').value = '';
+                document.getElementById('regPass').value = '';
             }
-        });
-
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const username = document.getElementById('login-username').value.trim();
-            const password = document.getElementById('login-password').value.trim();
-
-            const users = getUsers();
-            const user = users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                currentUser = user.username;
-                showToast(`Selamat datang kembali, ${currentUser}!`, "success");
-                openDashboard();
-            } else {
-                showToast("Username atau password salah.", "error");
-            }
-        });
+        }
 
         function logout() {
             currentUser = null;
-            document.getElementById('login-username').value = '';
-            document.getElementById('login-password').value = '';
-            switchScreen('auth-screen');
-            showToast("Berhasil keluar.", "success");
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('mainPass').value = '';
         }
 
-        // --- LOGIKA BUKU HARIAN ---
+        // --- SISTEM BUKU HARIAN ---
+
         function openDashboard() {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
             document.getElementById('display-username').textContent = `Halo, ${currentUser}`;
-            renderEntries();
-            switchScreen('app-screen');
+            loadEntries();
         }
 
-        function switchScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        document.getElementById('diary-form').addEventListener('submit', function(e) {
+        function saveEntry(e) {
             e.preventDefault();
-            
-            const title = document.getElementById('entry-title').value.trim();
-            const content = document.getElementById('entry-content').value.trim();
+            const title = document.getElementById('entryTitle').value;
+            const content = document.getElementById('entryContent').value;
 
-            if (!title || !content) return;
+            if(!title || !content) return;
 
             const newEntry = {
-                id: Date.now(), // ID unik berdasarkan waktu
+                id: Date.now(),
                 date: new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'short' }),
-                title: title,
-                content: content
+                title,
+                content
             };
 
-            saveEntry(currentUser, newEntry);
+            // Ambil data lama
+            const allData = JSON.parse(localStorage.getItem(DB_ENTRIES)) || {};
+            if(!allData[currentUser]) allData[currentUser] = [];
             
-            // Reset Form
-            document.getElementById('entry-title').value = '';
-            document.getElementById('entry-content').value = '';
+            // Tambah ke depan (unshift)
+            allData[currentUser].unshift(newEntry);
             
-            showToast("Catatan berhasil disimpan!", "success");
-            renderEntries();
-        });
+            // Simpan
+            localStorage.setItem(DB_ENTRIES, JSON.stringify(allData));
 
-        function renderEntries() {
-            const container = document.getElementById('diary-list-container');
-            const entries = getEntries(currentUser);
+            // Reset form & reload
+            document.getElementById('entryTitle').value = '';
+            document.getElementById('entryContent').value = '';
+            loadEntries();
+        }
 
-            container.innerHTML = '';
-
-            if (entries.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <p>Belum ada catatan.</p>
-                        <p>Mulai tulis ceritamu sekarang!</p>
-                    </div>
-                `;
-                return;
+        function deleteEntry(id) {
+            if(confirm("Hapus catatan ini?")) {
+                const allData = JSON.parse(localStorage.getItem(DB_ENTRIES)) || {};
+                if(allData[currentUser]) {
+                    allData[currentUser] = allData[currentUser].filter(entry => entry.id !== id);
+                    localStorage.setItem(DB_ENTRIES, JSON.stringify(allData));
+                    loadEntries();
+                }
             }
-
-            entries.forEach(entry => {
-                const card = document.createElement('div');
-                card.className = 'diary-card';
-                card.innerHTML = `
-                    <div class="diary-date">${entry.date}</div>
-                    <div class="diary-title">${escapeHtml(entry.title)}</div>
-                    <div class="diary-content">${escapeHtml(entry.content)}</div>
-                    <button class="btn-delete" onclick="deleteDiaryEntry(${entry.id})" title="Hapus Catatan">&times;</button>
-                `;
-                container.appendChild(card);
-            });
         }
 
-        // Fungsi agar HTML tidak tereksekusi (security sederhana)
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
-
-        // Fungsi hapus entry (dipanggil dari string HTML)
-        window.deleteDiaryEntry = function(id) {
-            if(confirm("Yakin ingin menghapus catatan ini?")) {
-                deleteEntry(currentUser, id);
-                renderEntries();
-                showToast("Catatan dihapus.", "success");
-            }
-        };
-
-        // --- UTILITAS NOTIFIKASI (TOAST) ---
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById("toast");
-            toast.className = "show " + type;
-            toast.textContent = message;
+        function loadEntries() {
+            const listContainer = document.getElementById('diaryList');
+            const emptyState = document.getElementById('emptyState');
             
-            setTimeout(function(){ 
-                toast.className = toast.className.replace("show", ""); 
-            }, 3000);
-        }
+            const allData = JSON.parse(localStorage.getItem(DB_ENTRIES)) || {};
+            const myEntries = allData[currentUser] || [];
 
-        // Cek apakah user sudah login sebelumnya (Opsional: fitur auto-login)
-        // Untuk privasi yang lebih baik di aplikasi ini, kita minta login ulang saat refresh.
+            listContainer.innerHTML = '';
+
+            if(myEntries.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                myEntries.forEach(entry => {
+                    const card = document.createElement('div');
+                    card.className = "bg-white p-4 rounded-lg shadow-sm border border-gray-200 relative group";
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs text-blue-500 font-bold uppercase tracking-wide">${entry.date}</span>
+                            <button onclick="deleteEntry(${entry.id})" class="text-gray-300 hover:text-red-500 transition focus:outline-none">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                        <h4 class="font-bold text-gray-800 text-lg mb-1">${entry.title}</h4>
+                        <p class="text-gray-600 text-sm whitespace-pre-wrap">${entry.content}</p>
+                    `;
+                    listContainer.appendChild(card);
+                });
+            }
+        }
     </script>
 </body>
 </html>
